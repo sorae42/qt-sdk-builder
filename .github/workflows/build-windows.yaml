@@ -16,12 +16,14 @@ jobs:
     steps:
     - name: Enable long paths
       run: Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1
+    - name: Checkout
+      uses: actions/checkout@v3
     - name: Install aria2
       run: choco install -y aria2
     - name: Install unar
       run: choco install -y unar
     - name: Download Qt SDK
-      run: aria2c -d "builds" "qt-everywhere-src-$Env:QT_VERSION.tar.xz.meta4"
+      run: aria2c -d "builds" ".\qt-everywhere-src-$Env:QT_VERSION.tar.xz.meta4"
     - name: Extract Qt SDK
       run: unar --quiet -s ".\qt-everywhere-src-$Env:QT_VERSION.tar.xz"
       continue-on-error: true
