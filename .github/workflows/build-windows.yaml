@@ -1,0 +1,39 @@
+name: Windows
+
+env:
+  QT_VERSION: 5.12.2
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    steps:
+    - name: Enable long paths
+      run: Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1
+    - name: Install aria2
+      run: choco install -y aria2
+    - name: Install unar
+      run: choco install -y unar
+    - name: Download Qt SDK
+      run: aria2c -d "builds" "qt-everywhere-src-$Env:QT_VERSION.tar.xz.meta4"
+    - name: Extract Qt SDK
+      run: unar --quiet -s ".\qt-everywhere-src-$Env:QT_VERSION.tar.xz"
+      continue-on-error: true
+    - name: Set up Visual Studio shell
+      uses: egor-tensin/vs-shell@v2
+      with:
+        arch: Win32
+    - name: Build and install SDK
+      run: pwsh build-windows.ps1
+    - name: Compress build
+      run: 7z a ".\builds\qt-$Env:QT_VERSION-win32-msvc-static.7z" "C:\Qt\Qt-$Env:QT_VERSION\"
+    - uses: actions/upload-artifact@v3
+      with:
+        name: qt-win32-msvc-static
+        path: .\builds\qt-${{ env.QT_VERSION }}-win32-msvc-static.7z
