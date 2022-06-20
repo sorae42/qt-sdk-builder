@@ -23,9 +23,9 @@ jobs:
     - name: Install unar
       run: choco install -y unar
     - name: Download Qt SDK
-      run: aria2c -d "builds" ".\qt-everywhere-src-$Env:QT_VERSION.tar.xz.meta4"
+      run: aria2c -d "downloads" ".\qt-everywhere-src-$Env:QT_VERSION.tar.xz.meta4"
     - name: Extract Qt SDK
-      run: unar --quiet -s ".\qt-everywhere-src-$Env:QT_VERSION.tar.xz"
+      run: unar --quiet -s -o ".\source" ".\downloads\qt-everywhere-src-$Env:QT_VERSION.tar.xz"
       continue-on-error: true
     - name: Set up Visual Studio shell
       uses: egor-tensin/vs-shell@v2
