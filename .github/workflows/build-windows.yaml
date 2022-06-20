@@ -35,9 +35,33 @@ jobs:
         arch: Win32
     - name: Build and install SDK
       run: pwsh build-windows.ps1
+    - name: Copy qt.conf into build
+      run: copy ".\qt.conf" "C:\Qt\Qt-$Env:QT_VERSION\bin\"
     - name: Compress build
       run: 7z a ".\builds\qt-$Env:QT_VERSION-win32-msvc-static.7z" "C:\Qt\Qt-$Env:QT_VERSION\"
     - uses: actions/upload-artifact@v3
       with:
         name: qt-win32-msvc-static
         path: .\builds\qt-${{ env.QT_VERSION }}-win32-msvc-static.7z
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    # Temporary: want to test the dir structure while ironing out build kinks.
+    #if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    steps:
+    - name: Download build
+      uses: actions/download-artifact@v3
+      with:
+        name: qt-win32-msvc-static
+
+    - name: Display structure of downloaded files
+      run: ls -R
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body: Automated release
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: qt-${{ env.QT_VERSION }}-win32-msvc-static.7z
