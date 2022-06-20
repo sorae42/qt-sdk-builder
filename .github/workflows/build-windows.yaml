@@ -47,8 +47,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    # Temporary: want to test the dir structure while ironing out build kinks.
-    #if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     steps:
     - name: Download build
