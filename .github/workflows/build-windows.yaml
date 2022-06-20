@@ -22,6 +22,8 @@ jobs:
       run: choco install -y aria2
     - name: Install unar
       run: choco install -y unar
+    - name: Install jom
+      run: choco install -y jom
     - name: Download Qt SDK
       run: aria2c -d "downloads" ".\qt-everywhere-src-$Env:QT_VERSION.tar.xz.meta4"
     - name: Extract Qt SDK
