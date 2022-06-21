@@ -1,0 +1,70 @@
+name: macOS
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ v* ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: macos-12
+    strategy:
+      matrix:
+        qt_version: [5.15.2]
+        debug_release: [debug, release]
+        arch: [x86_64, arm64]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Install unar
+      run: brew install unar
+    - name: Download Qt SDK
+      run: aria2c -d "downloads" "./qt-everywhere-src-${{ matrix.qt_version }}.tar.xz.meta4"
+    - name: Extract Qt SDK
+      run: unar --quiet -s -o "./source" "./downloads/qt-everywhere-src-${{ matrix.qt_version }}.tar.xz"
+    - name: Make build directory
+      run: mkdir build
+    - name: Configure build
+      working-directory: build
+      run: |
+        ../source/qt-everywhere-src-${{ matrix.qt_version }}/configure -prefix "../Qt-${{ matrix.qt_version }}" -static -${{ matrix.debug_release }} -opensource -confirm-license -opengl desktop -qt-zlib -qt-libpng -qt-webp -qt-libjpeg -qt-freetype -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtconnectivity -skip qtdatavis3d -skip qtdeclarative -skip qtdoc -skip qtgamepad -skip qtlocation -skip qtlottie -skip qtmacextras -skip qtmultimedia -skip qtnetworkauth -skip qtpurchasing -skip qtquick3d -skip qtquickcontrols -skip qtquickcontrols2 -skip qtquicktimeline -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtspeech -skip qtsvg -skip qtwayland -skip qtwebglplugin -skip qtwebview -skip webengine -make libs -nomake tools -nomake examples -nomake tests
+    - name: Build Qt SDK
+      working-directory: build
+      run: make -j4
+    - name: Install Qt SDK
+      working-directory: build
+      run: make -j4 install
+    - name: Copy qt.conf into build
+      run: cp "./qt.conf" "./Qt-${{ matrix.qt_version }}/bin/"
+    - name: Compress build
+      run: 7z a "./builds/qt-${{ matrix.qt_version }}-${{ matrix.arch }}-static-${{ matrix.debug_release }}.7z" "./Qt-${{ matrix.qt_version }}/"
+    - uses: actions/upload-artifact@v3
+      with:
+        name: qt-${{ matrix.arch }}-static-${{ matrix.debug_release }}
+        path: .\builds\qt-${{ matrix.qt_version }}-${{ matrix.arch }}-static-${{ matrix.debug_release }}.7z
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    steps:
+    - name: Download build
+      uses: actions/download-artifact@v3
+
+    - name: Display structure of downloaded files
+      run: ls -R
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body: Automated release
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: |
+          qt-${{ matrix.qt_version }}-x86_64-static-debug.7z
+          qt-${{ matrix.qt_version }}-x86_64-static-release.7z
+          qt-${{ matrix.qt_version }}-arm64-static-debug.7z
+          qt-${{ matrix.qt_version }}-arm64-static-release.7z

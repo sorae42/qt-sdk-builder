@@ -14,6 +14,10 @@ jobs:
   build:
     name: Build
     runs-on: windows-latest
+    strategy:
+      matrix:
+        debug_release: [debug, release]
+        arch: [x86, x64]
     steps:
     - name: Enable long paths
       run: Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1
@@ -26,24 +30,34 @@ jobs:
     - name: Install jom
       run: choco install -y jom
     - name: Download Qt SDK
-      run: aria2c -d "downloads" ".\qt-everywhere-src-$Env:QT_VERSION.tar.xz.meta4"
+      run: aria2c -d "downloads" ".\qt-everywhere-src-${{ env.QT_VERSION }}.tar.xz.meta4"
     - name: Extract Qt SDK
-      run: unar --quiet -s -o ".\source" ".\downloads\qt-everywhere-src-$Env:QT_VERSION.tar.xz"
+      run: unar --quiet -s -o ".\source" ".\downloads\qt-everywhere-src-${{ env.QT_VERSION }}.tar.xz"
       continue-on-error: true
     - name: Set up Visual Studio shell
       uses: egor-tensin/vs-shell@v2
       with:
-        arch: Win32
-    - name: Build and install SDK
-      run: pwsh build-windows.ps1
+        arch: ${{ matrix.arch }}
+    - name: Make build directory
+      run: New-Item -Path "build" -ItemType directory
+    - name: Configure build
+      working-directory: build
+      run: |
+        cmd /c "..\source\qt-everywhere-src-${{ env.QT_VERSION }}\configure.bat -static -${{ matrix.debug_release }} -opensource -confirm-license -opengl desktop -qt-zlib -qt-libpng -qt-webp -qt-libjpeg -qt-freetype -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtconnectivity -skip qtdatavis3d -skip qtdeclarative -skip qtdoc -skip qtgamepad -skip qtlocation -skip qtlottie -skip qtmacextras -skip qtmultimedia -skip qtnetworkauth -skip qtpurchasing -skip qtquick3d -skip qtquickcontrols -skip qtquickcontrols2 -skip qtquicktimeline -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtspeech -skip qtsvg -skip qtwayland -skip qtwebglplugin -skip qtwebview -skip webengine -make libs -nomake tools -nomake examples -nomake tests"
+    - name: Build Qt SDK
+      working-directory: build
+      run: jom
+    - name: Install Qt SDK
+      working-directory: build
+      run: jom install
     - name: Copy qt.conf into build
-      run: copy ".\qt.conf" "C:\Qt\Qt-$Env:QT_VERSION\bin\"
+      run: copy ".\qt.conf" "C:\Qt\Qt-${{ env.QT_VERSION }}\bin\"
     - name: Compress build
-      run: 7z a ".\builds\qt-$Env:QT_VERSION-win32-msvc-static.7z" "C:\Qt\Qt-$Env:QT_VERSION\"
+      run: 7z a ".\builds\qt-${{ env.QT_VERSION }}-${{ matrix.arch }}-msvc-static-${{ matrix.debug_release }}.7z"
     - uses: actions/upload-artifact@v3
       with:
-        name: qt-win32-msvc-static
-        path: .\builds\qt-${{ env.QT_VERSION }}-win32-msvc-static.7z
+        name: qt-${{ matrix.arch }}-msvc-static-${{ matrix.debug_release }}
+        path: .\builds\qt-${{ env.QT_VERSION }}-${{ matrix.arch }}-msvc-static-${{ matrix.debug_release }}.7z
 
   release:
     name: Release
@@ -53,8 +67,6 @@ jobs:
     steps:
     - name: Download build
       uses: actions/download-artifact@v3
-      with:
-        name: qt-win32-msvc-static
 
     - name: Display structure of downloaded files
       run: ls -R
@@ -64,4 +76,8 @@ jobs:
       with:
         body: Automated release
         token: ${{ secrets.GITHUB_TOKEN }}
-        files: qt-${{ env.QT_VERSION }}-win32-msvc-static.7z
+        files: |
+          qt-${{ env.QT_VERSION }}-x86-msvc-static-debug.7z
+          qt-${{ env.QT_VERSION }}-x86-msvc-static-release.7z
+          qt-${{ env.QT_VERSION }}-x64-msvc-static-debug.7z
+          qt-${{ env.QT_VERSION }}-x64-msvc-static-release.7z
