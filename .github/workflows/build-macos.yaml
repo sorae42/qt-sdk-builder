@@ -46,8 +46,8 @@ jobs:
       run: 7z a "./builds/qt-${{ matrix.qt_version }}-${{ matrix.arch }}-static-${{ matrix.debug_release }}.7z" "./Qt-${{ matrix.qt_version }}/"
     - uses: actions/upload-artifact@v3
       with:
-        name: qt-${{ matrix.arch }}-static-${{ matrix.debug_release }}
-        path: .\builds\qt-${{ matrix.qt_version }}-${{ matrix.arch }}-static-${{ matrix.debug_release }}.7z
+        name: qt-${{ matrix.qt_version }}-${{ matrix.arch }}-static-${{ matrix.debug_release }}
+        path: ./builds/qt-${{ matrix.qt_version }}-${{ matrix.arch }}-static-${{ matrix.debug_release }}.7z
 
   release:
     name: Release
@@ -67,7 +67,7 @@ jobs:
         body: Automated release
         token: ${{ secrets.GITHUB_TOKEN }}
         files: |
-          qt-${{ matrix.qt_version }}-x86_64-static-debug.7z
-          qt-${{ matrix.qt_version }}-x86_64-static-release.7z
-          qt-${{ matrix.qt_version }}-arm64-static-debug.7z
-          qt-${{ matrix.qt_version }}-arm64-static-release.7z
+          qt-${{ matrix.qt_version }}-x86_64-static-debug/qt-${{ matrix.qt_version }}-x86_64-static-debug.7z
+          qt-${{ matrix.qt_version }}-x86_64-static-release/qt-${{ matrix.qt_version }}-x86_64-static-release.7z
+          qt-${{ matrix.qt_version }}-arm64-static-debug/qt-${{ matrix.qt_version }}-arm64-static-debug.7z
+          qt-${{ matrix.qt_version }}-arm64-static-release/qt-${{ matrix.qt_version }}-arm64-static-release.7z
