@@ -25,6 +25,7 @@ jobs:
       run: aria2c -d "downloads" "./qt-everywhere-src-${{ matrix.qt_version }}.tar.xz.meta4"
     - name: Extract Qt SDK
       run: unar --quiet -s -o "./source" "./downloads/qt-everywhere-src-${{ matrix.qt_version }}.tar.xz"
+      continue-on-error: true
     - name: Make build directory
       run: mkdir build
     - name: Configure build
