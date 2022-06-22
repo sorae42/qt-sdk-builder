@@ -53,11 +53,11 @@ jobs:
     - name: Copy qt.conf into build
       run: copy ".\qt.conf" "C:\Qt\Qt-${{ env.QT_VERSION }}\bin\"
     - name: Compress build
-      run: 7z a ".\builds\qt-${{ env.QT_VERSION }}-${{ matrix.arch }}-msvc-static-${{ matrix.debug_release }}.7z" "C:\Qt\Qt-${{ env.QT_VERSION }}\"
+      run: 7z a ".\builds\qt-windows-${{ env.QT_VERSION }}-${{ matrix.arch }}-msvc-static-${{ matrix.debug_release }}.7z" "C:\Qt\Qt-${{ env.QT_VERSION }}\"
     - uses: actions/upload-artifact@v3
       with:
-        name: qt-${{ env.QT_VERSION }}-${{ matrix.arch }}-msvc-static-${{ matrix.debug_release }}
-        path: .\builds\qt-${{ env.QT_VERSION }}-${{ matrix.arch }}-msvc-static-${{ matrix.debug_release }}.7z
+        name: qt-windows-${{ env.QT_VERSION }}-${{ matrix.arch }}-msvc-static-${{ matrix.debug_release }}
+        path: .\builds\qt-windows-${{ env.QT_VERSION }}-${{ matrix.arch }}-msvc-static-${{ matrix.debug_release }}.7z
 
   release:
     name: Release
