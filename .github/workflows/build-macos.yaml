@@ -26,6 +26,8 @@ jobs:
     - name: Extract Qt SDK
       run: tar -C "./source/" -xvf "./downloads/qt-everywhere-src-${{ matrix.qt_version }}.tar.xz"
       continue-on-error: true
+    - name: Apply patches
+      run: patch -p1 -i ./patches/qt5base-cocoa.patch
     - name: Make build directory
       run: mkdir build
     - name: Configure build
