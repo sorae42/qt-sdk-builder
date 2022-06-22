@@ -76,8 +76,5 @@ jobs:
       with:
         body: Automated release
         token: ${{ secrets.GITHUB_TOKEN }}
-        files: |
-          qt-${{ env.QT_VERSION }}-x86-msvc-static-debug/qt-${{ env.QT_VERSION }}-x86-msvc-static-debug.7z
-          qt-${{ env.QT_VERSION }}-x86-msvc-static-release/qt-${{ env.QT_VERSION }}-x86-msvc-static-release.7z
-          qt-${{ env.QT_VERSION }}-x64-msvc-static-debug/qt-${{ env.QT_VERSION }}-x64-msvc-static-debug.7z
-          qt-${{ env.QT_VERSION }}-x64-msvc-static-release/qt-${{ env.QT_VERSION }}-x64-msvc-static-release.7z
+        files: qt-*/qt-*.7z
+        fail_on_unmatched_files: true
